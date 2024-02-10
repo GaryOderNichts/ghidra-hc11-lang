@@ -21,6 +21,18 @@ define register offset=0x00 size=2 [ D ];
 define register offset=0x10 size=2 [ IX      IY      ];
 define register offset=0x10 size=1 [ IXH IXL IYH IYL ];
 
+# Define the GCC soft registers in RAM
+define RAM offset=0 size=2 [
+	SREGTMP SREGZ SREGXY SREGFRAME
+	# TODO more d soft registers
+	SREGD1 SREGD2 SREGD3 SREGD4
+];
+
+define RAM offset=0 size=1 [
+	SREGTMPbyte _ SREGZbyte  _ SREGXYbyte _ SREGFRAMEbyte
+	SREGD1byte  _ SREGD2byte _ SREGD3byte _ SREGD4byte
+];
+
 define register offset=0x20 size=2 [ PC      SP      ];
 define register offset=0x20 size=1 [ PCH PCL SPH SPL ];
 
