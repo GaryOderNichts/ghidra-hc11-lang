@@ -29,7 +29,7 @@ define RAM offset=0 size=2 [
 ];
 
 define RAM offset=0 size=1 [
-	SREGTMPbyte	_ SREGZbyte  _ SREGXYbyte _ SREGFRAMEbyte
+	SREGTMPbyte _ SREGZbyte  _ SREGXYbyte _ SREGFRAMEbyte
 	SREGD1byte  _ SREGD2byte _ SREGD3byte _ SREGD4byte
 ];
 
