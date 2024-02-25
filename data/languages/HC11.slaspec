@@ -160,27 +160,25 @@ macro subtraction_flags2(register, operand, result) {
 }
 
 macro Pull1(operand) {
-	paddr:2 = SP;
-	operand = *paddr;
 	SP = SP + 1;
+	operand = *:1 SP;
 }
 
 macro Pull2(operand) {
-	paddr:2 = SP;
-	operand = *paddr;
-	SP = SP + 2;
+	SP = SP + 1;
+	operand = *:2 SP;
+	SP = SP + 1;
 }
 
 macro Push1(operand) {
+	*:1 SP = operand;
 	SP = SP - 1;
-	paddr:2 = SP;
-	*paddr = operand;
 }
 
 macro Push2(operand) {
-	SP = SP - 2;
-	paddr:2 = SP;
-	*paddr = operand;
+	SP = SP - 1;
+	*:2 SP = operand;
+	SP = SP - 1;
 }
 
 macro setCCR(operand) {
