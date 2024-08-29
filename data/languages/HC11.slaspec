@@ -89,7 +89,7 @@ msk8:			imm8  is imm8 { export *[const]:1 imm8; }
 
 # INDX / INDY
 oprx8_X:		imm8,IX  is imm8 & IX { addr:2 = IX + zext(imm8:1); export addr; }
-oprx8_Y:		imm8,IX  is imm8 & IX { addr:2 = IY + zext(imm8:1); export addr; }
+oprx8_Y:		imm8,IY  is imm8 & IY { addr:2 = IY + zext(imm8:1); export addr; }
 
 oprx8_8_X:		imm8,IX  is imm8 & IX { addr:2 = IX + zext(imm8:1); export *:1 addr; }
 oprx8_8_Y:		imm8,IY  is imm8 & IY { addr:2 = IY + zext(imm8:1); export *:1 addr; }
