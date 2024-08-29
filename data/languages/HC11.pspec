@@ -6,16 +6,29 @@
 
   <!-- Add GCC soft registers -->
   <register_data>
-    <register name="SREGTMP" alias="_.tmp"/>
-    <register name="SREGZ" alias="_.z"/>
-    <register name="SREGXY" alias="_.xy"/>
-    <register name="SREGFRAME" alias="_.frame"/>
-    <register name="SREGD1" alias="_.d1"/>
-    <register name="SREGD2" alias="_.d2"/>
-    <register name="SREGD3" alias="_.d3"/>
-    <register name="SREGD4" alias="_.d4"/>
+    <register name="SREGTMP"/>
+    <register name="SREGZ"/>
+    <register name="SREGXY"/>
+    <register name="SREGFRAME"/>
+    <register name="SREGD1"/>
+    <register name="SREGD2"/>
+    <register name="SREGD3"/>
+    <register name="SREGD4"/>
     <!-- TODO there can be up to 32 of the d registers -->
   </register_data>
+
+  <!-- <context_data>
+     <tracked_set space="RAM">
+        <set name="SREGTMP"   val="0"/>
+        <set name="SREGZ"     val="0"/>
+        <set name="SREGXY"    val="0"/>
+        <set name="SREGFRAME" val="0"/>
+        <set name="SREGD1"    val="0"/>
+        <set name="SREGD2"    val="0"/>
+        <set name="SREGD3"    val="0"/>
+        <set name="SREGD4"    val="0"/>
+     </tracked_set>
+  </context_data> -->
 
   <default_symbols>
     <symbol name="VECTOR_Reset"                        address="FFFE" entry="true" type="code_ptr"/>
