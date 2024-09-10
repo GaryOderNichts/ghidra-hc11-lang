@@ -2,6 +2,33 @@
 
 <processor_spec>
   <programcounter register="PC"/>
+  <data_space space="RAM"/>
+
+  <!-- Add GCC soft registers -->
+  <register_data>
+    <register name="SREGTMP"/>
+    <register name="SREGZ"/>
+    <register name="SREGXY"/>
+    <register name="SREGFRAME"/>
+    <register name="SREGD1"/>
+    <register name="SREGD2"/>
+    <register name="SREGD3"/>
+    <register name="SREGD4"/>
+    <!-- TODO there can be up to 32 of the d registers -->
+  </register_data>
+
+  <!-- <context_data>
+     <tracked_set space="RAM">
+        <set name="SREGTMP"   val="0"/>
+        <set name="SREGZ"     val="0"/>
+        <set name="SREGXY"    val="0"/>
+        <set name="SREGFRAME" val="0"/>
+        <set name="SREGD1"    val="0"/>
+        <set name="SREGD2"    val="0"/>
+        <set name="SREGD3"    val="0"/>
+        <set name="SREGD4"    val="0"/>
+     </tracked_set>
+  </context_data> -->
 
   <default_symbols>
     <symbol name="VECTOR_Reset"                        address="FFFE" entry="true" type="code_ptr"/>

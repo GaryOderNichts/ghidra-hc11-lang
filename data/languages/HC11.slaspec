@@ -21,6 +21,18 @@ define register offset=0x00 size=2 [ D ];
 define register offset=0x10 size=2 [ IX      IY      ];
 define register offset=0x10 size=1 [ IXH IXL IYH IYL ];
 
+# Define the GCC soft registers in RAM
+define register offset=0x50 size=2 [
+	SREGTMP SREGZ SREGXY SREGFRAME
+	# TODO more d soft registers
+	SREGD1 SREGD2 SREGD3 SREGD4
+];
+
+define register offset=0x50 size=1 [
+	SREGTMPbyte _ SREGZbyte  _ SREGXYbyte _ SREGFRAMEbyte
+	SREGD1byte  _ SREGD2byte _ SREGD3byte _ SREGD4byte
+];
+
 define register offset=0x20 size=2 [ PC      SP      ];
 define register offset=0x20 size=1 [ PCH PCL SPH SPL ];
 
@@ -52,6 +64,7 @@ define token opbyte8 (8)
 ;
 
 define token data8 (8)
+	softreg8 = (1, 7)
 	imm8  = (0,7)
 	simm8 = (0,7) signed
 	rel   = (0,7) signed
@@ -61,6 +74,41 @@ define token data16 (16)
 	imm16  = (0,15)
 	simm16 = (0,15) signed
 ;
+
+attach variables softreg8 [
+	SREGTMP SREGZ SREGXY SREGFRAME
+	SREGD1 SREGD2 SREGD3 SREGD4
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+	_	_ 	_ 	_
+];
 
 ################################################################
 # Pseudo Instructions
@@ -148,27 +196,25 @@ macro subtraction_flags2(register, operand, result) {
 }
 
 macro Pull1(operand) {
-	paddr:2 = SP;
-	operand = *paddr;
 	SP = SP + 1;
+	operand = *:1 SP;
 }
 
 macro Pull2(operand) {
-	paddr:2 = SP;
-	operand = *paddr;
-	SP = SP + 2;
+	SP = SP + 1;
+	operand = *:2 SP;
+	SP = SP + 1;
 }
 
 macro Push1(operand) {
+	*:1 SP = operand;
 	SP = SP - 1;
-	paddr:2 = SP;
-	*paddr = operand;
 }
 
 macro Push2(operand) {
-	SP = SP - 2;
-	paddr:2 = SP;
-	*paddr = operand;
+	SP = SP - 1;
+	*:2 SP = operand;
+	SP = SP - 1;
 }
 
 macro setCCR(operand) {
@@ -365,8 +411,8 @@ macro setCCR(operand) {
 	D = result;
 }
 
-:ADDD opr8a_16             is Prebyte=0 & op8=0xD3; opr8a_16 {
-	local op1:2 = opr8a_16;
+:ADDD softreg8             is Prebyte=0 & op8=0xD3; softreg8 {
+	local op1:2 = softreg8;
 
 	local result:2 = D + op1;
 	addition_flags2(D, op1, result);
@@ -999,8 +1045,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = sborrow(D, op1);
 }
 
-:CPD opr8a_16              is Prebyte=0x1A & op8=0x93; opr8a_16 {
-	local op1:2 = opr8a_16;
+:CPD softreg8              is Prebyte=0x1A & op8=0x93; softreg8 {
+	local op1:2 = softreg8;
 	local tmp:2 = D - op1;
 	$(Z) = (tmp == 0);
 	$(N) = (tmp s< 0);
@@ -1044,8 +1090,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = sborrow(IX, op1);
 }
 
-:CPX opr8a_16              is Prebyte=0 & op8=0x9C; opr8a_16 {
-	local op1:2 = opr8a_16;
+:CPX softreg8              is Prebyte=0 & op8=0x9C; softreg8 {
+	local op1:2 = softreg8;
 	local tmp:2 = IX - op1;
 	$(Z) = (tmp == 0);
 	$(N) = (tmp s< 0);
@@ -1089,8 +1135,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = sborrow(IY, op1);
 }
 
-:CPY opr8a_16              is Prebyte=0x18 & op8=0x9C; opr8a_16 {
-	local op1:2 = opr8a_16;
+:CPY softreg8              is Prebyte=0x18 & op8=0x9C; softreg8 {
+	local op1:2 = softreg8;
 	local tmp:2 = IY - op1;
 	$(Z) = (tmp == 0);
 	$(N) = (tmp s< 0);
@@ -1465,8 +1511,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:LDD opr8a_16              is Prebyte=0 & op8=0xDC; opr8a_16 {
-	D = opr8a_16;
+:LDD softreg8              is Prebyte=0 & op8=0xDC; softreg8 {
+	D = softreg8;
 	$(Z) = (D == 0);
 	$(N) = (D s< 0);
 	$(V) = 0;
@@ -1500,8 +1546,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:LDS opr8a_16              is Prebyte=0 & op8=0x9E; opr8a_16 {
-	SP = LoadStack(opr8a_16);
+:LDS softreg8              is Prebyte=0 & op8=0x9E; softreg8 {
+	SP = LoadStack(softreg8);
 	$(Z) = (SP == 0);
 	$(N) = (SP s< 0);
 	$(V) = 0;
@@ -1535,8 +1581,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:LDX opr8a_16              is Prebyte=0 & op8=0xDE; opr8a_16 {
-	IX = opr8a_16;
+:LDX softreg8              is Prebyte=0 & op8=0xDE; softreg8 {
+	IX = softreg8;
 	$(Z) = (IX == 0);
 	$(N) = (IX s< 0);
 	$(V) = 0;
@@ -1570,8 +1616,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:LDY opr8a_16              is Prebyte=0x18 & op8=0xDE; opr8a_16 {
-	IY = opr8a_16;
+:LDY softreg8              is Prebyte=0x18 & op8=0xDE; softreg8 {
+	IY = softreg8;
 	$(Z) = (IY == 0);
 	$(N) = (IY s< 0);
 	$(V) = 0;
@@ -2101,8 +2147,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:STD opr8a_16              is Prebyte=0 & op8=0xDD; opr8a_16 {
-	opr8a_16 = D;
+:STD softreg8              is Prebyte=0 & op8=0xDD; softreg8 {
+	softreg8 = D;
 	$(Z) = (D == 0);
 	$(N) = (D s< 0);
 	$(V) = 0;
@@ -2142,8 +2188,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	<continue>
 }
 
-:STS opr8a_16              is Prebyte=0 & op8=0x9F; opr8a_16 {
-	opr8a_16 = SP;
+:STS softreg8              is Prebyte=0 & op8=0x9F; softreg8 {
+	softreg8 = SP;
 	$(Z) = (SP == 0);
 	$(N) = (SP s< 0);
 	$(V) = 0;
@@ -2170,8 +2216,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:STX opr8a_16              is Prebyte=0 & op8=0xDF; opr8a_16 {
-	opr8a_16 = IX;
+:STX softreg8              is Prebyte=0 & op8=0xDF; softreg8 {
+	softreg8 = IX;
 	$(Z) = (IX == 0);
 	$(N) = (IX s< 0);
 	$(V) = 0;
@@ -2198,8 +2244,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	$(V) = 0;
 }
 
-:STY opr8a_16              is Prebyte=0x18 & op8=0xDF; opr8a_16 {
-	opr8a_16 = IY;
+:STY softreg8              is Prebyte=0x18 & op8=0xDF; softreg8 {
+	softreg8 = IY;
 	$(Z) = (IY == 0);
 	$(N) = (IY s< 0);
 	$(V) = 0;
@@ -2314,8 +2360,8 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 	D = result;
 }
 
-:SUBD opr8a_16             is Prebyte=0 & op8=0x93; opr8a_16 {
-	local op1:2 = opr8a_16;
+:SUBD softreg8             is Prebyte=0 & op8=0x93; softreg8 {
+	local op1:2 = softreg8;
 
 	local result:2 = D - op1;
 	subtraction_flags2(D, op1, result);
@@ -2424,19 +2470,19 @@ SkipNextInstr: dest  is epsilon [ dest = inst_next + 1; ] { export *[RAM]:1 dest
 }
 
 :TSX                       is Prebyte=0 & op8=0x30 {
-	IX = SP;
+	IX = SP + 1;
 }
 
 :TSY                       is Prebyte=0x18 & op8=0x30 {
-	IY = SP;
+	IY = SP + 1;
 }
 
 :TXS                       is Prebyte=0 & op8=0x35 {
-	SP = IX;
+	SP = IX - 1;
 }
 
 :TYS                       is Prebyte=0x18 & op8=0x35 {
-	SP = IY;
+	SP = IY - 1;
 }
 
 :WAI                       is Prebyte=0 & op8=0x3E {
